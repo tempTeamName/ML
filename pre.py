@@ -14,10 +14,9 @@ from sklearn.model_selection import train_test_split
 
 # drop rows with invalid values and destringify the list of artists 
 def cleanArtists(songs):
-    print("clean artists")
     songs['artists'] = songs['artists'].apply(lambda x: x[1:-1].split(', ') if(type(x) == str and len(x)) else [])
     songs['artists'] = songs['artists'].apply(lambda x: list(map(lambda y: y[1:-1], x)) )
-    encoder = ce.HashingEncoder(cols=['artists'], n_components=20, return_df=True, drop_invariant=True)
+    encoder = ce.HashingEncoder(cols=['artists'], n_components=5, return_df=True, drop_invariant=True)
     df = encoder.fit_transform(songs['artists'], songs['popularity'])
     songs = df.join(songs)
     return songs
@@ -60,7 +59,7 @@ def dropCols(songs):
     songs = songs.drop(columns=['id', 'release_date'])
     return songs
 
-def pre(songs, withArtists):
+def pre(songs):
     print("pre starts")
     songs = cleanYear(songs)
     print("remove empty data")
@@ -68,11 +67,15 @@ def pre(songs, withArtists):
     print("drop unUsed columns")
     songs = dropCols(songs)
     print("merge duplicates songs (might take a while) ")
-    songs = mergeDuplicates(songs)
-    if withArtists:
-        print("clean artists (might take a while) ")
-        songs = cleanArtists(songs)
+    songs1 = mergeDuplicates(songs)
+    print("clean artists (might take a while) ")
+    songs2 = cleanArtists(songs)
     
-    songs = songs.drop(columns=['name', 'artists'])
-    songs.dropna(how='any',inplace=True)
-    return songs
+    songs1 = songs1.drop(columns=['name', 'artists'])
+    songs1.dropna(how='any',inplace=True)
+    
+    songs2 = songs2.drop(columns=['name', 'artists'])
+    songs2.dropna(how='any',inplace=True)
+    
+    
+    return songs1, songs2
