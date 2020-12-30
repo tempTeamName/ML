@@ -6,18 +6,18 @@ import random
 import string
 import category_encoders as ce 
 from sklearn.metrics import accuracy_score
-from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.preprocessing import MultiLabelBinarizer, minmax_scale
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import shuffle
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import train_test_split
 
 # drop rows with invalid values and destringify the list of artists 
-def cleanArtists(songs):
+def cleanArtists(songs, y_name):
     songs['artists'] = songs['artists'].apply(lambda x: x[1:-1].split(', ') if(type(x) == str and len(x)) else [])
     songs['artists'] = songs['artists'].apply(lambda x: list(map(lambda y: y[1:-1], x)) )
     encoder = ce.HashingEncoder(cols=['artists'], n_components=5, return_df=True, drop_invariant=True)
-    df = encoder.fit_transform(songs['artists'], songs['popularity'])
+    df = encoder.fit_transform(songs['artists'], songs[y_name])
     songs = df.join(songs)
     return songs
 
@@ -29,7 +29,7 @@ def cleanYear(songs):
      return songs
 
 # merging groups of songs with the same name and artists taking mean values for the other columns
-def mergeDuplicates(songs):
+def mergeDuplicates(songs,y_name):
     songs = songs.groupby(['artists', 'name'], as_index=False).agg({
         'valence':np.average,
         'yearsSinceCreation':np.average,
@@ -44,7 +44,7 @@ def mergeDuplicates(songs):
         'speechiness':np.average,
         'explicit':np.average,
         'mode':np.average,
-        'popularity':np.average
+        y_name:np.average
     })
     songs.loc[:, 'explicit'] = round(songs.explicit)
 
@@ -60,22 +60,27 @@ def dropCols(songs):
     return songs
 
 def pre(songs):
-    print("pre starts")
+    y_name = songs.columns[-1]
+    print("preprossing start")
     songs = cleanYear(songs)
     print("remove empty data")
     songs = removeEmpty(songs)
     print("drop unUsed columns")
     songs = dropCols(songs)
-    print("merge duplicates songs (might take a while) ")
-    songs1 = mergeDuplicates(songs)
+    # print("merge duplicates songs (might take a while) ")
+    # songs = mergeDuplicates(songs)
     print("clean artists (might take a while) ")
-    songs2 = cleanArtists(songs)
+    songsWithArtists = cleanArtists(songs, y_name)
     
-    songs1 = songs1.drop(columns=['name', 'artists'])
-    songs1.dropna(how='any',inplace=True)
+    songs = songs.drop(columns=['name', 'artists'])
+    songs.dropna(how='any',inplace=True)
     
-    songs2 = songs2.drop(columns=['name', 'artists'])
-    songs2.dropna(how='any',inplace=True)
+    songs.iloc[:,0:-1] = minmax_scale(songs.iloc[:,0:-1])
     
+    songsWithArtists = songsWithArtists.drop(columns=['name', 'artists'])
+    songsWithArtists.dropna(how='any',inplace=True)
+
+    songsWithArtists.iloc[:,0:-1] = minmax_scale(songsWithArtists.iloc[:,0:-1])
+    print("preprossing end")
     
-    return songs1, songs2
+    return songs, songsWithArtists
