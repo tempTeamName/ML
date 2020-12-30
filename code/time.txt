@@ -1,0 +1,3 @@
+logisticReg c = 1 time : 1.6920032501220703
+logisticReg c = 10 time : 1.7900011539459229
+logisticReg c = 100 time : 1.8489563465118408
