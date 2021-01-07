@@ -5,9 +5,12 @@ import pickle
 import time
 import matplotlib.pyplot as plt
 import dTree
+import os
 from pandas import DataFrame, read_csv
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, r2_score
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import f_classif
 
 
 def split(songs):
@@ -18,112 +21,116 @@ def split(songs):
 
 def evaluate(model, x_test, y_test):
     y_pred = model.predict(x_test)
-    print(model.classes_)
     print(classification_report(y_test, y_pred))
-    print("score :", model.score(x_test, y_test))
-    print('Co-efficients : ',model.coef_)
-    print('Intercept :',model.intercept_)
-
-    cm = confusion_matrix(y_test, y_pred)
-    _, ax = plt.subplots(figsize=(8, 8))
-    ax.imshow(cm)
-    ax.grid(False)
-    ax.xaxis.set(ticks=(0, 1, 2), ticklabels=('Predicted High', 'Predicted Intermediate', 'Predicted Low'))
-    ax.yaxis.set(ticks=(0, 1, 2), ticklabels=('Actual High', 'Actual Intermediate', "Actual LOW"))
-    for i in range(3):
-        for j in range(3):
-            ax.text(j, i, cm[i, j], ha='center', va='center', color='red')
-    plt.show()
-    # print('MSE :%.3f'%metrics.mean_squared_error(y_test, prediction))
-    # print('MAE :%.3f'%metrics.mean_absolute_error(y_test, prediction))
+    print("score : ", model.score(x_test, y_test))
 
 
 def writeTime(strr):
-    f = open("time.txt", "a")
+    f = open("./models/time.txt", "a")
     f.write(strr+'\n')
     f.close()
 
 
-def train(x_train, y_train):
-    path = "./models/"
-    start_time = time.time()
-    model = logisticReg.logisticReg(x_train, y_train,1)
-    print('logisticReg c = 1 time : ',(time.time() - start_time))
-    writeTime('logisticReg c = 1 time : '+str(time.time() - start_time))
-    pickle.dump(model, open(path+"logisticReg.sav", 'wb'))
+def train(x_train, y_train, path):
 
-    start_time = time.time()
-    model = logisticReg.logisticReg(x_train, y_train,10)
-    print('logisticReg c = 10 time : ',(time.time() - start_time))
-    writeTime('logisticReg c = 10 time : '+str(time.time() - start_time))
-    pickle.dump(model, open(path+"logisticReg.sav", 'wb'))
+    # clear the time file
+    f = open(path+"time.txt", "w")
+    f.close()
 
-    start_time = time.time()
-    model = logisticReg.logisticReg(x_train, y_train,100)
-    print('logisticReg c = 100 time : ',(time.time() - start_time))
-    writeTime('logisticReg c = 100 time : '+str(time.time() - start_time))
-    pickle.dump(model, open(path+"logisticReg.sav", 'wb'))
-    
+    # logisticReg
+    C = [1, 10, 100]
+    for c in C:   
+        start_time = time.time()
+        model = logisticReg.logisticReg(x_train, y_train,c)
+        printStr = f'logisticReg c = {c} time : '+str(time.time() - start_time)
+        print(printStr)
+        writeTime(printStr)
+        pickle.dump(model, open(path+f"logisticReg{c}.sav", 'wb'))
+
+
+    # SVM linear
     start_time = time.time()
     model = svm.linearSvm(x_train, y_train)
-    print("linear svm time : ",(time.time() - start_time))
-    writeTime('linear svm time : '+str(time.time() - start_time))
+    printStr = 'linear svm time : '+str(time.time() - start_time)
+    print(printStr)
+    writeTime(printStr)
     pickle.dump(model, open(path+"linearSvm.sav", 'wb'))
-    
-    start_time = time.time()
-    model = svm.polySvm(x_train, y_train, 2)
-    print("polySvm2 time : ",(time.time() - start_time))
-    writeTime('polySvm2 time : '+str(time.time() - start_time))
-    pickle.dump(model, open(path+"polySvm2.sav", 'wb'))
 
-    start_time = time.time()
-    model = svm.polySvm(x_train, y_train, 3)
-    print("polySvm3 time : ",(time.time() - start_time))
-    writeTime('polySvm3 time : '+str(time.time() - start_time))
-    pickle.dump(model, open(path+"polySvm3.sav", 'wb'))
-    
-    start_time = time.time()
-    model = svm.polySvm(x_train, y_train, 4)
-    print("polySvm4 time : ",(time.time() - start_time))
-    writeTime('polySvm4 time : '+str(time.time() - start_time))
-    pickle.dump(model, open(path+"polySvm4.sav", 'wb'))
+    # poly SVM
+    degree = [2, 3]
+    for deg in degree:
+        start_time = time.time()
+        model = svm.polySvm(x_train, y_train, deg)
+        printStr = f'polySvm degree = {deg} time : '+str(time.time() - start_time)
+        print(printStr)
+        writeTime(printStr)
+        pickle.dump(model, open(path+f"polySvm{deg}.sav", 'wb'))
 
+    # gaussian SVM
     start_time = time.time()
     model = svm.gaussianSvm(x_train, y_train)
-    print("gaussianSvm time : ",(time.time() - start_time))
-    writeTime('polySvm4 time : '+str(time.time() - start_time))
+    printStr = "gaussianSvm time : "+str(time.time() - start_time)
+    print(printStr)
+    writeTime(printStr)
     pickle.dump(model, open(path+"gaussianSvm.sav", 'wb'))
 
-    start_time = time.time()
-    model = dTree.dTree(x_train, y_train, 3)
-    print("Decision Tree time : ",(time.time() - start_time))
-    writeTime('Decision Tree time : '+str(time.time() - start_time))
-    pickle.dump(model, open(path+"dTree.sav", 'wb'))
+    # decision tree
+    level = [3, 5, 7]
+    for lev in level:
+        start_time = time.time()
+        model = dTree.dTree(x_train, y_train, lev)
+        printStr = f'Decision Tree level = {lev} time : '+str(time.time() - start_time)
+        print(printStr)
+        writeTime(printStr)
+        pickle.dump(model, open(path+f"dTree{lev}.sav", 'wb'))
 
 
-def getModels():
-    logRegModel = pickle.load(open("logisticReg.sav", 'rb'))
-    linearSvmModel = pickle.load(open("linearSvm.sav", 'rb'))
-    polySvm2Model = pickle.load(open("polySvm2.sav", 'rb'))
-    polySvm3Model = pickle.load(open("polySvm3.sav", 'rb'))
-    polySvm4Model = pickle.load(open("polySvm4.sav", 'rb'))
-    gaussianSvmModel = pickle.load(open("gaussianSvm.sav", 'rb'))
+def evaluateModels(x_test, y_test, path):
+    for i in os.listdir(path):
+        if i.endswith(".sav"):
+            print("=================== ", i)
+            model = pickle.load(open(path+i, 'rb'))
+            evaluate(model, x_test, y_test)
+            print("===end=== ", i)
+
+def evaluateModelsWithTestData(songs: DataFrame):
+    _, x_test, _, y_test = split(songs)
+    evaluateModels(x_test, y_test, "./models/")
+    topFeatures = getTopFeatures(songs, 10)
+    topFeatures.append('popularity_level')
+    songs = songs[topFeatures]
+    _, x_test, _, y_test = split(songs) 
+    evaluateModels(x_test, y_test, "./topFeaturesModels/")
+
+def trainWithAllFeatures(songs: DataFrame):
+    x_train, x_test, y_train, y_test = split(songs)
+    train(x_train, y_train, "./models/")
+    return x_test, y_test
+
+def trainWithTopCorrFeatrues(songs: DataFrame):
+    topFeatures = getTopFeatures(songs, 10)
+    topFeatures.append('popularity_level')
+    songs = songs[topFeatures]
+    x_train, x_test, y_train, y_test = split(songs)
+    train(x_train, y_train, "./topFeaturesModels/")
+    return x_test, y_test
+
+
+def getTopFeatures(songs: DataFrame, K: int):
+    X = songs.iloc[:,0:-1]
+    y = songs["popularity_level"]
+    fs = SelectKBest(score_func=f_classif, k=K)
+    fs.fit_transform(X, y)
+    mask = fs.get_support()
+    features = []
+    for i in range(len(songs.columns)-1):
+        if(mask[i] == True):
+            features.append(songs.columns[i])
     
-    return {
-        "logisticReg": logRegModel,
-        "linearSvm": linearSvmModel,
-        "polySvm2": polySvm2Model,
-        "polySvm3":polySvm3Model,
-        "polySvm4":polySvm4Model,
-        "gaussianSvm": gaussianSvmModel
-    }
-    
-
+    return features
 
 if __name__ == "__main__":
-    # songs = read_csv("../datasets/spotify_training_classification.csv")
-    # songs,songsWithArtists = pre.pre(songs)
-    # songs = read_csv("songs.csv")
-    songsWithArtists = read_csv("songsWithArtists.csv")
-    x_train, x_test, y_train, y_test = split(songsWithArtists)
-    train(x_train, y_train)
+    songs = read_csv("./dataSetCache/songs.csv")
+
+   
+    
