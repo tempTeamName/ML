@@ -1,4 +1,4 @@
-from classification.clssification_main import evaluateModelsWithTestData
+from classification.train import runTrain
 
 if __name__ == "__main__":
-    evaluateModelsWithTestData()
+    runTrain(None)

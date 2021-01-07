@@ -1,5 +1,3 @@
 code/models
-code/modelsWithArtists
-code/topFeaturesModels
-code/__pycache__
+__pycache__/
 code/dataSetCache

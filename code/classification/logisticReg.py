@@ -1,4 +1,3 @@
-import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 def logisticReg(x_train, y_train, c):
