@@ -1,11 +1,13 @@
-import logisticReg
-import svm
-import pre
 import pickle
 import time
 import matplotlib.pyplot as plt
-import dTree
 import os
+
+from .dTree import dTree 
+from .svm import linearSvm, linearSvm, polySvm, gaussianSvm
+from .logisticReg import logisticReg
+from preprocessing import pre
+
 from pandas import DataFrame, read_csv
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, r2_score
@@ -41,7 +43,7 @@ def train(x_train, y_train, path):
     C = [1, 10, 100]
     for c in C:   
         start_time = time.time()
-        model = logisticReg.logisticReg(x_train, y_train,c)
+        model = logisticReg(x_train, y_train,c)
         printStr = f'logisticReg c = {c} time : '+str(time.time() - start_time)
         print(printStr)
         writeTime(printStr)
@@ -50,7 +52,7 @@ def train(x_train, y_train, path):
 
     # SVM linear
     start_time = time.time()
-    model = svm.linearSvm(x_train, y_train)
+    model = linearSvm(x_train, y_train)
     printStr = 'linear svm time : '+str(time.time() - start_time)
     print(printStr)
     writeTime(printStr)
@@ -60,7 +62,7 @@ def train(x_train, y_train, path):
     degree = [2, 3]
     for deg in degree:
         start_time = time.time()
-        model = svm.polySvm(x_train, y_train, deg)
+        model = polySvm(x_train, y_train, deg)
         printStr = f'polySvm degree = {deg} time : '+str(time.time() - start_time)
         print(printStr)
         writeTime(printStr)
@@ -68,7 +70,7 @@ def train(x_train, y_train, path):
 
     # gaussian SVM
     start_time = time.time()
-    model = svm.gaussianSvm(x_train, y_train)
+    model = gaussianSvm(x_train, y_train)
     printStr = "gaussianSvm time : "+str(time.time() - start_time)
     print(printStr)
     writeTime(printStr)
@@ -78,7 +80,7 @@ def train(x_train, y_train, path):
     level = [3, 5, 7]
     for lev in level:
         start_time = time.time()
-        model = dTree.dTree(x_train, y_train, lev)
+        model = dTree(x_train, y_train, lev)
         printStr = f'Decision Tree level = {lev} time : '+str(time.time() - start_time)
         print(printStr)
         writeTime(printStr)
@@ -93,7 +95,8 @@ def evaluateModels(x_test, y_test, path):
             evaluate(model, x_test, y_test)
             print("===end=== ", i)
 
-def evaluateModelsWithTestData(songs: DataFrame):
+def evaluateModelsWithTestData():
+    songs = read_csv("./dataSetCache/songs.csv")
     _, x_test, _, y_test = split(songs)
     evaluateModels(x_test, y_test, "./models/")
     topFeatures = getTopFeatures(songs, 10)
@@ -130,7 +133,4 @@ def getTopFeatures(songs: DataFrame, K: int):
     return features
 
 if __name__ == "__main__":
-    songs = read_csv("./dataSetCache/songs.csv")
-
-   
-    
+    pass

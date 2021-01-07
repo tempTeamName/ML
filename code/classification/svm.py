@@ -22,3 +22,5 @@ def gaussianSvm(x_train, y_train):
     svclassifier = SVC(kernel='rbf')
     model = svclassifier.fit(x_train, y_train)
     return model
+
+print("svm LOL")
