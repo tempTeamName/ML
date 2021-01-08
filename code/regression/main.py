@@ -1,6 +1,8 @@
 import reg
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pickle
+import time
 from pandas import read_csv
 from pre import pre
 import time
@@ -20,6 +22,58 @@ def getTopCorrFeatures(songs):
     top_features = corr.index[abs(corr['popularity']) > 0.4]
     return top_features
 
+
+def train(x_train, y_train, path: str, top: bool):
+
+    # clear the time file
+    f = open(path+"time.txt", "w")
+    f.close()
+
+    if top:
+        # with top correlated features 
+
+        deg = 4
+        alpha = 0.01
+
+        start_time = time.time()
+        model = reg(x_train, y_train, deg, alpha)
+        printStr = f'regression degree = {deg} time : '+str(time.time() - start_time)
+        print(printStr)
+        writeTime(printStr, path)
+        pickle.dump(model, open(path+f"{deg}_{alpha}_regressionTOP.sav", 'wb'))
+
+
+    deg = 3
+    alpha = 0.01
+
+    start_time = time.time()
+    model = reg(x_train, y_train, deg, alpha)
+    printStr = f'regression degree = {deg} time : '+str(time.time() - start_time)
+    print(printStr)
+    writeTime(printStr, path)
+    pickle.dump(model, open(path+f"{deg}_{alpha}_regressionWithAll.sav", 'wb'))
+
+
+    deg = 3
+    alpha = 0.5
+
+    start_time = time.time()
+    model = reg(x_train, y_train, deg, alpha)
+    printStr = f'regression degree = {deg} time : '+str(time.time() - start_time)
+    print(printStr)
+    writeTime(printStr, path)
+    pickle.dump(model, open(path+f"{deg}_{alpha}_regressionWithAll.sav", 'wb'))
+
+
+    # reg with cv
+    cv = 10
+
+    start_time = time.time()
+    model = regWithCV(x_train, y_train, cv)
+    printStr = f'regression with cv = 10 time : '+str(time.time() - start_time)
+    print(printStr)
+    writeTime(printStr, path)
+    pickle.dump(model, open(path+f"{deg}_{alpha}_regressionCV.sav", 'wb'))
 
 if __name__ == "__main__":
     songs = read_csv("spotify_training.csv")
