@@ -1,6 +1,7 @@
 import os
 import pickle
 from sklearn.preprocessing import PolynomialFeatures
+from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from pandas import read_csv
 
@@ -11,6 +12,12 @@ def getTopCorrFeatures(songs):
     top_features = corr.index[abs(corr['popularity']) > 0.4]
     return top_features
 
+def split(songs, testsize):
+    X = songs.iloc[:,0:-1]
+    Y = songs.iloc[:,-1]
+    x_train, x_test, y_train, y_test = train_test_split( X, Y, test_size = testsize,  random_state= 0 )
+    return x_train, x_test, y_train, y_test
+
 def runEvaluate():
 
     songs = read_csv("./dataSetCache/regression/songs.csv")
@@ -18,8 +25,7 @@ def runEvaluate():
         read_csv("./dataSetCache/regression/songsWithAritsts.csv")
 
     # all featurea but artists     
-    x_test = songs.iloc[:,0:-1]
-    y_test = songs.iloc[:,-1]
+    _, x_test, _, y_test = split(songs,0.30)
     
     model = pickle.load(open(path + "regression.sav", 'rb'))
     degree = 4
@@ -34,8 +40,7 @@ def runEvaluate():
     print(f"=================== end {name} ===================\n\n")
 
     # all featurea 
-    x_test = songsWithArtists.iloc[:,0:-1]
-    y_test = songsWithArtists.iloc[:,-1]
+    _, x_test, _, y_test = split(songsWithArtists,0.30)
     
     model = pickle.load(open(path + "regressionWithArtists.sav", 'rb'))
     degree = 3
@@ -53,8 +58,7 @@ def runEvaluate():
     # with top correlated features
     top_features = getTopCorrFeatures(songs)
 
-    x_test = songs[top_features].iloc[:,0:-1]
-    y_test = songs[top_features].iloc[:,-1]
+    _, x_test, _, y_test = split(songs[top_features],0.30)
 
     model = pickle.load(open(path + "regressionTOP.sav", 'rb'))
     degree = 4

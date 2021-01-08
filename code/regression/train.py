@@ -3,7 +3,13 @@ import time
 import pickle
 from pandas import DataFrame, read_csv
 from regression.reg import reg
-from preprocessing.utilities import split
+from sklearn.model_selection import train_test_split
+
+def split(songs, testsize):
+    X = songs.iloc[:,0:-1]
+    Y = songs.iloc[:,-1]
+    x_train, x_test, y_train, y_test = train_test_split( X, Y, test_size = testsize,  random_state= 0 )
+    return x_train, x_test, y_train, y_test
 
 path = "./models/regressionModels/"
 
