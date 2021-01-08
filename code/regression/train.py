@@ -2,7 +2,7 @@ import os
 import time
 import pickle
 from pandas import DataFrame, read_csv
-from regression.reg import reg, regWithCV
+from regression.reg import reg
 from preprocessing.utilities import split
 
 path = "./models/regressionModels/"
@@ -22,10 +22,11 @@ def getTopCorrFeatures(songs):
 def runTrain():
     songs = read_csv("./dataSetCache/regression/songs.csv")
     songsWithArtists = \
-        read_csv("./dataSetCache/regression/songsWithArtists.csv")
+        read_csv("./dataSetCache/regression/songsWithAritsts.csv")
 
+    f = open(path+"time.txt", "w")
+    f.close()
     
-
     # train with all featurea but artists
     x_train, _, y_train, _ = split(songs,0.30)
 
