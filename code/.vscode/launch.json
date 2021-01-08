@@ -5,17 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
-        },
-        {
             "name": "classification main",
             "type": "python",
             "request": "launch",
-            "program": "classification_main.py",
+            "program": "main.py",
             "console": "integratedTerminal"
         }
     ]
