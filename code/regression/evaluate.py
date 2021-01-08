@@ -2,6 +2,7 @@ import os
 import pickle
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn import metrics
+from pandas import read_csv
 
 path = "./models/regressionModels/"
 
@@ -10,7 +11,11 @@ def getTopCorrFeatures(songs):
     top_features = corr.index[abs(corr['popularity']) > 0.4]
     return top_features
 
-def runEvaluate(songs, songsWithArtists):
+def runEvaluate():
+
+    songs = read_csv("./dataSetCache/regression/songs.csv")
+    songsWithArtists = \
+        read_csv("./dataSetCache/regression/songsWithArtists.csv")
 
     # all featurea but artists     
     x_test = songs.iloc[:,0:-1]
