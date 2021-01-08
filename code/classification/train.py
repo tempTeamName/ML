@@ -7,67 +7,17 @@ from pandas import DataFrame, read_csv
 from classification.dTree import dTree 
 from classification.svm import linearSvm, linearSvm, polySvm, gaussianSvm
 from classification.logisticReg import logisticReg
-from preprocessing.utilities import split
-
+from sklearn.model_selection import train_test_split
+def split(songs, testsize):
+    X = songs.iloc[:,0:-1]
+    Y = songs.iloc[:,-1]
+    x_train, x_test, y_train, y_test = train_test_split( X, Y, test_size = testsize,  random_state= 0 )
+    return x_train, x_test, y_train, y_test
 
 def writeTime(strr, path):
     f = open(path+"time.txt", "a")
     f.write(strr+'\n')
     f.close()
-
-def train(x_train, y_train, path):
-
-    # clear the time file
-    f = open(path+"time.txt", "w")
-    f.close()
-
-    # logisticReg
-    C = [1, 10, 100]
-    for c in C:   
-        start_time = time.time()
-        model = logisticReg(x_train, y_train,c)
-        printStr = f'logisticReg c = {c} time : '+str(time.time() - start_time)
-        print(printStr)
-        writeTime(printStr, path)
-        pickle.dump(model, open(path+f"logisticReg{c}.sav", 'wb'))
-
-
-    # SVM linear
-    start_time = time.time()
-    model = linearSvm(x_train, y_train)
-    printStr = 'linear svm time : '+str(time.time() - start_time)
-    print(printStr)
-    writeTime(printStr, path)
-    pickle.dump(model, open(path+"linearSvm.sav", 'wb'))
-
-    # poly SVM
-    degree = [2, 3]
-    for deg in degree:
-        start_time = time.time()
-        model = polySvm(x_train, y_train, deg)
-        printStr = f'polySvm degree = {deg} time : '+str(time.time() - start_time)
-        print(printStr)
-        writeTime(printStr, path)
-        pickle.dump(model, open(path+f"polySvm{deg}.sav", 'wb'))
-
-    # gaussian SVM
-    start_time = time.time()
-    model = gaussianSvm(x_train, y_train)
-    printStr = "gaussianSvm time : "+str(time.time() - start_time)
-    print(printStr)
-    writeTime(printStr, path)
-    pickle.dump(model, open(path+"gaussianSvm.sav", 'wb'))
-
-    # decision tree
-    level = [3, 5, 7]
-    for lev in level:
-        start_time = time.time()
-        model = dTree(x_train, y_train, lev)
-        printStr = f'Decision Tree level = {lev} time : '+str(time.time() - start_time)
-        print(printStr)
-        writeTime(printStr, path)
-        pickle.dump(model, open(path+f"dTree{lev}.sav", 'wb'))
-
 
 def getTopFeatures(songs: DataFrame, K: int):
     X = songs.iloc[:,0:-1]
@@ -81,17 +31,43 @@ def getTopFeatures(songs: DataFrame, K: int):
             features.append(songs.columns[i])
     return features
 
-def runTrain(songs:DataFrame):
-    if songs is None:
-        songs = read_csv("dataSetCache/songs.csv")
+path = "./models/classificationModels/"
 
-    # train with all featurea but artists
-    x_train, _, y_train, _ = split(songs)
-    train(x_train, y_train, "./models/classificationModels/models")
+def runTrain():
+    songs = read_csv("./dataSetCache/classification/songs.csv")
 
-    # train with the top 10 features
-    topFeatures = getTopFeatures(songs, 10)
-    topFeatures.append('popularity_level')
-    songs = songs[topFeatures]
-    x_train, _, y_train, _ = split(songs)
-    train(x_train, y_train, "./models/classificationModels/topFeaturesModels/")
+    # clear the time file
+    f = open(path+"time.txt", "w")
+    f.close()
+
+    x_train, _, y_train, _ = split(songs,0.20)
+
+    # Decision Tree
+    lev = 5
+
+    start_time = time.time()
+    model = dTree(x_train, y_train, lev)
+    printStr = 'Decision Tree time : '+str(time.time() - start_time)
+    print(printStr)
+    writeTime(printStr, path)
+    pickle.dump(model, open(path+"dTree.sav", 'wb'))
+    
+    # gaussian Svm
+    start_time = time.time()
+    model = gaussianSvm(x_train, y_train)
+    printStr = "gaussian Svm time : "+str(time.time() - start_time)
+    print(printStr)
+    writeTime(printStr, path)
+    pickle.dump(model, open(path+"gaussianSvm.sav", 'wb'))
+
+    
+    # logistic regression
+    
+    c = 10
+
+    start_time = time.time()
+    model = logisticReg(x_train, y_train, c)
+    printStr = 'logisticReg time : '+str(time.time() - start_time)
+    print(printStr)
+    writeTime(printStr, path)
+    pickle.dump(model, open(path+"logisticReg.sav", 'wb'))
