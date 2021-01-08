@@ -5,6 +5,7 @@ from random import randrange
 import random
 import string
 import category_encoders as ce 
+from pandas import read_csv
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import MultiLabelBinarizer, minmax_scale
 from sklearn.preprocessing import LabelEncoder
@@ -30,24 +31,8 @@ def cleanYear(songs):
 
 def mergeDuplicates(songs,y_name):
     '''merging groups of songs with the same name and artists taking mean values for the other columns'''
-    songs = songs.groupby(['artists', 'name'], as_index=False).agg({
-        'valence':np.average,
-        'yearsSinceCreation':np.average,
-        'acousticness':np.average,
-        'danceability':np.average,
-        'duration_ms':np.average,
-        'energy':np.average,
-        'instrumentalness':np.average,
-        'liveness':np.average,
-        'loudness':np.average,
-        'tempo':np.average,
-        'speechiness':np.average,
-        'explicit':np.average,
-        'mode':np.average,
-        y_name:np.average
-    })
+    songs = songs.drop_duplicates(subset=['artists', 'name'])
     songs.loc[:, 'explicit'] = round(songs.explicit)
-
     return songs
 
 def removeEmpty(songs):
@@ -67,8 +52,8 @@ def pre(songs):
     songs = removeEmpty(songs)
     print("drop unUsed columns")
     songs = dropCols(songs)
-    # print("merge duplicates songs (might take a while) ")
-    # songs = mergeDuplicates(songs)
+    print("merge duplicates songs (might take a while) ")
+    songs = mergeDuplicates(songs,y_name)
     print("clean artists (might take a while) ")
     songsWithArtists = cleanArtists(songs, y_name)
     
@@ -84,3 +69,15 @@ def pre(songs):
     print("preprossing end")
     
     return songs, songsWithArtists
+
+def runPre():
+    songsRegression = read_csv("../datasets/spotify_training.csv")
+    songsClassification = read_csv("../datasets/spotify_training_classification.csv")
+
+    songs, songsWithAritsts = pre(songsRegression)
+    songs.to_csv("./dataSetCache/regression/songs.csv", index=False)
+    songsWithAritsts.to_csv("./dataSetCache/regression/songsWithAritsts.csv", index=False)
+
+    songs, songsWithAritsts = pre(songsClassification)
+    songs.to_csv("./dataSetCache/classification/songs.csv", index=False)
+    songsWithAritsts.to_csv("./dataSetCache/classification/songsWithAritsts.csv", index=False)
