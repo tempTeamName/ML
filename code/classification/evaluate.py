@@ -86,29 +86,3 @@ def test(songs):
     print("score : ", model.score(x_test, y_test))
     print(f"=================== end {name} ===================\n\n")
 
-
-def predict(songs):
-
-    # Decision Tree
-    model = pickle.load(open(path + "dTree.sav", 'rb'))
-    name = "Decision Tree"
-    
-    print(f"\n\n=================== {name} ===================")
-    print("score : ", model.score(x_test, y_test))
-    print(f"=================== end {name} ===================\n\n")
-
-    # gaussian Svm
-    model = pickle.load(open(path + "gaussianSvm.sav", 'rb'))
-    name = "gaussian Svm"
-
-    print(f"\n\n=================== {name} ===================")
-    print("score : ", model.score(x_test, y_test))
-    print(f"=================== end {name} ===================\n\n")
-
-    # logistic regression
-    model = pickle.load(open(path + "logisticReg.sav", 'rb'))
-    name = "logistic regression"
-
-    print(f"\n\n=================== {name} ===================")
-    print("score : ", model.score(x_test, y_test))
-    print(f"=================== end {name} ===================\n\n")
