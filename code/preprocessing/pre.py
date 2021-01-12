@@ -13,6 +13,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import shuffle
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
 
 def cleanArtists(songs, y_name, path):
     '''drop rows with invalid values and destringify the list of artists'''
@@ -29,7 +30,6 @@ def cleanArtists(songs, y_name, path):
 
 def cleanYear(songs):
     '''drop rows with invalid values or out of range'''
-    songs = songs.dropna(subset=['year'])
     songs.loc[songs.year > 1900, 'year'] = 2020 - songs.year
     songs = songs.rename(columns={'year': 'yearsSinceCreation'})
     return songs
@@ -59,8 +59,8 @@ def pre(songs):
         
     print("preprossing start")
     songs = cleanYear(songs)
-    print("remove empty data")
-    songs = removeEmpty(songs)
+    # print("remove empty data")
+    # songs = removeEmpty(songs)
     print("drop unUsed columns")
     songs = dropCols(songs)
     print("merge duplicates songs (might take a while) ")
@@ -69,13 +69,19 @@ def pre(songs):
     songs = cleanArtists(songs, y_name, path)
     
     songs = songs.drop(columns=['name', 'artists'])
-    songs.dropna(how='any',inplace=True)
+    # songs.dropna(how='any',inplace=True)
         
     scaler = MinMaxScaler().fit(songs.iloc[:,0:-1])
     songs.iloc[:,0:-1] = scaler.transform(songs.iloc[:,0:-1])
     # save the encoder model
     pickle.dump(scaler, open(path+"scaler.sav", 'wb'))
 
+    # missing values
+    imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean').fit(songs)
+    songs = imp_mean.transform(songs)
+    # save the encoder model
+    pickle.dump(imp_mean, open(path+"imp_mean.sav", 'wb'))
+    
     songsWithoutAritsts = songs.loc[:,songs.columns not in ['col_0', 'col_1', 'col_2', 'col_3', 'col_4']]
     print("preprossing end")
     
@@ -105,6 +111,10 @@ def preForNew(songs: DataFrame):
     # scaler
     scaler = pickle.load(open(path + "scaler.sav", 'rb'))
     songs.iloc[:,0:-1] = scaler.transform(songs.iloc[:,0:-1])
+
+    # missing values
+    imp_mean = pickle.load(open(path + "imp_mean.sav", 'rb'))
+    songs = imp_mean.transform(songs)
 
     songsWithoutAritsts = songs.loc[:,songs.columns not in ['col_0', 'col_1', 'col_2', 'col_3', 'col_4']]
 
