@@ -1,5 +1,6 @@
 import pickle
 import os
+import time
 from pandas import read_csv
 from sklearn.metrics import classification_report, confusion_matrix, r2_score
 from sklearn.model_selection import train_test_split
@@ -36,26 +37,33 @@ def runEvaluate():
     model = pickle.load(open(path + "dTree.sav", 'rb'))
     name = "Decision Tree"
 
+    start_time = time.time()
     print(f"\n\n=================== {name} ===================")
     print("score : ", model.score(x_test, y_test))
     print(f"=================== end {name} ===================\n\n")
+    print(f"{name} : "+str(time.time() - start_time))
 
     # gaussian Svm
     model = pickle.load(open(path + "gaussianSvm.sav", 'rb'))
     name = "gaussian Svm"
 
+    start_time = time.time()
     print(f"\n\n=================== {name} ===================")
     print("score : ", model.score(x_test, y_test))
     print(f"=================== end {name} ===================\n\n")
+    print(f"{name} : "+str(time.time() - start_time))
+
 
     # logistic regression
     model = pickle.load(open(path + "logisticReg.sav", 'rb'))
     name = "logistic regression"
 
+    start_time = time.time()
     print(f"\n\n=================== {name} ===================")
     print("score : ", model.score(x_test, y_test))
     print(f"=================== end {name} ===================\n\n")
-
+    print(f"{name} : "+str(time.time() - start_time))
+    
 
 def test(songs):
 

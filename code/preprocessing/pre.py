@@ -23,7 +23,7 @@ def cleanArtists(songs, y_name, path):
     df = encoder.fit_transform(songs['artists'], songs[y_name])
 
     # save the encoder model
-    pickle.dump(encoder, open(path+"endcoder.sav", 'wb'))
+    pickle.dump(encoder, open(path+"encoder.sav", 'wb'))
 
     songs = df.join(songs)
     return songs
@@ -59,8 +59,8 @@ def pre(songs):
         
     print("preprossing start")
     songs = cleanYear(songs)
-    # print("remove empty data")
-    # songs = removeEmpty(songs)
+    print("remove empty data")
+    songs = removeEmpty(songs)
     print("drop unUsed columns")
     songs = dropCols(songs)
     print("merge duplicates songs (might take a while) ")
@@ -69,20 +69,23 @@ def pre(songs):
     songs = cleanArtists(songs, y_name, path)
     
     songs = songs.drop(columns=['name', 'artists'])
-    # songs.dropna(how='any',inplace=True)
+    songs.dropna(how='any',inplace=True)
         
-    scaler = MinMaxScaler().fit(songs.iloc[:,0:-1])
-    songs.iloc[:,0:-1] = scaler.transform(songs.iloc[:,0:-1])
+    # scaler = MinMaxScaler().fit(songs.iloc[:,0:-1])
+    # songs.iloc[:,0:-1] = scaler.transform(songs.iloc[:,0:-1])
     # save the encoder model
-    pickle.dump(scaler, open(path+"scaler.sav", 'wb'))
+    # pickle.dump(scaler, open(path+"scaler.sav", 'wb'))
 
     # missing values
-    imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean').fit(songs)
-    songs = imp_mean.transform(songs)
+    imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean').fit(songs.iloc[:,0:-1])
+    songs.iloc[:,0:-1] = imp_mean.transform(songs.iloc[:,0:-1])
     # save the encoder model
     pickle.dump(imp_mean, open(path+"imp_mean.sav", 'wb'))
-    
-    songsWithoutAritsts = songs.loc[:,songs.columns not in ['col_0', 'col_1', 'col_2', 'col_3', 'col_4']]
+
+    songsWithoutAritsts = songs.loc[:,['valence',
+       'yearsSinceCreation', 'acousticness', 'danceability', 'duration_ms',
+       'energy', 'explicit', 'instrumentalness', 'key', 'liveness', 'loudness',
+       'mode', 'tempo', 'speechiness', y_name]]
     print("preprossing end")
     
     return songsWithoutAritsts, songs
@@ -96,27 +99,30 @@ def preForNew(songs: DataFrame):
         path = "./preprocessing/models/regression/"
 
     # year
-    songs.loc[:, 'year'] = 2020 - songs.year
-    songs = songs.rename(columns={'year': 'yearsSinceCreation'})
+    songs = cleanYear(songs)
 
     # drop columns
-    songs = songs.drop(columns=['id', 'release_date', 'name'])
+    songs = dropCols(songs)
 
     # artists
     encoder = pickle.load(open(path + "encoder.sav", 'rb'))
     df = encoder.transform(songs['artists'], songs[y_name])
     songs = df.join(songs)
-    songs = songs.drop(columns=['artists'])
-    
-    # scaler
-    scaler = pickle.load(open(path + "scaler.sav", 'rb'))
-    songs.iloc[:,0:-1] = scaler.transform(songs.iloc[:,0:-1])
+    songs = songs.drop(columns=['name', 'artists'])
 
     # missing values
     imp_mean = pickle.load(open(path + "imp_mean.sav", 'rb'))
-    songs = imp_mean.transform(songs)
+    songs.iloc[:,0:-1] = imp_mean.transform(songs.iloc[:,0:-1])
+    print(songs.head())
 
-    songsWithoutAritsts = songs.loc[:,songs.columns not in ['col_0', 'col_1', 'col_2', 'col_3', 'col_4']]
+    # scaler
+    # scaler = pickle.load(open(path + "scaler.sav", 'rb'))
+    # songs.iloc[:,0:-1] = scaler.transform(songs.iloc[:,0:-1])
+
+    songsWithoutAritsts = songs.loc[:,['valence',
+       'yearsSinceCreation', 'acousticness', 'danceability', 'duration_ms',
+       'energy', 'explicit', 'instrumentalness', 'key', 'liveness', 'loudness',
+       'mode', 'tempo', 'speechiness', y_name]]
 
     return songsWithoutAritsts, songs
 

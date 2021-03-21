@@ -1,10 +1,11 @@
 import pandas
 import os, shutil
+from pandas import read_csv
 from classification.train import runTrain as classificationTrain
-from classification.evaluate import runEvaluate as classificationEvaluate
+from classification.evaluate import runEvaluate as classificationEvaluate, test as classificationTest
 from regression.train import runTrain as regressionTrain 
-from regression.evaluate import runEvaluate as regressionEvaluate
-from preprocessing.pre import runPre
+from regression.evaluate import runEvaluate as regressionEvaluate, test as regressionTest
+from preprocessing.pre import runPre, preForNew
 
 def clearFolder(folder):
     for filename in os.listdir(folder):
@@ -26,6 +27,22 @@ def clearTmpData():
     clearFolder("./models/")
     init()
 
+def testNew():
+    songsRegression = read_csv("./testing/spotify_testing.csv")
+    songsClassification = read_csv("./testing/spotify_testing_classification.csv")
+
+    # test the new dataset in regression
+    songs, songsWithAritsts = preForNew(songsRegression)
+    songs.to_csv("./testing/dataSetCache/regression/songs.csv", index=False)
+    songsWithAritsts.to_csv("./testing/dataSetCache/regression/songsWithAritsts.csv", index=False)
+    regressionTest(songs, songsWithAritsts)
+
+    # test the new dataset in classification
+    songs, songsWithAritsts = preForNew(songsClassification)
+    songs.to_csv("./testing/dataSetCache/classification/songs.csv", index=False)
+    songsWithAritsts.to_csv("./testing/dataSetCache/classification/songsWithAritsts.csv", index=False)
+    classificationTest(songs)
+
 def init():
     createFolder("./dataSetCache/")
     createFolder("./models/")
@@ -35,6 +52,9 @@ def init():
     
     createFolder("./models/classificationModels")
     createFolder("./models/regressionModels")
+
+    createFolder("./testing/dataSetCache/classification")
+    createFolder("./testing/dataSetCache/regression")
 
 def main():
     init()
@@ -54,7 +74,7 @@ def main():
         regressionEvaluate()
         classificationEvaluate()
     if(ch == '4'):
-        pass
+        testNew()
     if(ch == '5'):
         yes = input("are you sure (yes/no)?")
         if yes == 'yes':
@@ -65,6 +85,7 @@ def main():
         classificationTrain()
         regressionEvaluate()
         classificationEvaluate()
+        testNew()
 
 if __name__ == "__main__":
     while True:

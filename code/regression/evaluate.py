@@ -1,5 +1,6 @@
 import os
 import pickle
+import time
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
@@ -31,6 +32,7 @@ def runEvaluate():
     degree = 4
     name = "regression without artists"
 
+    start_time = time.time()
     print(f"\n\n=================== {name} ===================")
     poly_features = PolynomialFeatures(degree=degree)
     y_pred = model.predict(poly_features.fit_transform(x_test))
@@ -38,6 +40,7 @@ def runEvaluate():
     print('MAE :%.3f'%metrics.mean_absolute_error(y_test, y_pred))
     print('r2 :%.3f'%metrics.r2_score(y_test, y_pred))
     print(f"=================== end {name} ===================\n\n")
+    print(f"{name} : "+str(time.time() - start_time))
 
     # all featurea 
     _, x_test, _, y_test = split(songsWithArtists,0.30)
@@ -45,7 +48,8 @@ def runEvaluate():
     model = pickle.load(open(path + "regressionWithArtists.sav", 'rb'))
     degree = 3
     name = "regression with artists"
-
+    
+    start_time = time.time()
     print(f"\n\n=================== {name} ===================")
     poly_features = PolynomialFeatures(degree=degree)
     y_pred = model.predict(poly_features.fit_transform(x_test))
@@ -53,10 +57,10 @@ def runEvaluate():
     print('MAE :%.3f'%metrics.mean_absolute_error(y_test, y_pred))
     print('r2 :%.3f'%metrics.r2_score(y_test, y_pred))
     print(f"=================== end {name} ===================\n\n")
-    
+    print(f"{name} : "+str(time.time() - start_time))
 
     # with top correlated features
-    top_features = getTopCorrFeatures(songs)
+    top_features = ['yearsSinceCreation', 'acousticness', 'energy', 'loudness','popularity']
 
     _, x_test, _, y_test = split(songs[top_features],0.30)
 
@@ -64,6 +68,7 @@ def runEvaluate():
     degree = 4
     name = "regression with top correlated features"
 
+    start_time = time.time()
     print(f"\n\n=================== {name} ===================")
     poly_features = PolynomialFeatures(degree=degree)
     y_pred = model.predict(poly_features.fit_transform(x_test))
@@ -71,7 +76,7 @@ def runEvaluate():
     print('MAE :%.3f'%metrics.mean_absolute_error(y_test, y_pred))
     print('r2 :%.3f'%metrics.r2_score(y_test, y_pred))
     print(f"=================== end {name} ===================\n\n")
-
+    print(f"{name} : "+str(time.time() - start_time))
 
 def test(songs, songsWithAritsts):
 
@@ -109,7 +114,7 @@ def test(songs, songsWithAritsts):
     
 
     # with top correlated features
-    top_features = getTopCorrFeatures(songs)
+    top_features = ['yearsSinceCreation', 'acousticness', 'energy', 'loudness','popularity']
 
     x_test = songs[top_features].iloc[:,0:-1]
     y_test = songs[top_features].iloc[:,-1]
