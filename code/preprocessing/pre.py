@@ -93,6 +93,7 @@ def pre(songs):
 def preForNew(songs: DataFrame):
     y_name = songs.columns[-1]
 
+
     if y_name == "popularity_level":
         path = "./preprocessing/models/classification/"
     else:
@@ -100,21 +101,18 @@ def preForNew(songs: DataFrame):
 
     # year
     songs = cleanYear(songs)
-
     # drop columns
     songs = dropCols(songs)
-
     # artists
     encoder = pickle.load(open(path + "encoder.sav", 'rb'))
     df = encoder.transform(songs['artists'], songs[y_name])
     songs = df.join(songs)
     songs = songs.drop(columns=['name', 'artists'])
 
+
     # missing values
     imp_mean = pickle.load(open(path + "imp_mean.sav", 'rb'))
     songs.iloc[:,0:-1] = imp_mean.transform(songs.iloc[:,0:-1])
-    print(songs.head())
-
     # scaler
     # scaler = pickle.load(open(path + "scaler.sav", 'rb'))
     # songs.iloc[:,0:-1] = scaler.transform(songs.iloc[:,0:-1])

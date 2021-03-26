@@ -96,6 +96,12 @@ def test(songs, songsWithAritsts):
     print('r2 :%.3f'%metrics.r2_score(y_test, y_pred))
     print(f"=================== end {name} ===================\n\n")
 
+    print("**********")
+    print(y_test[150:155])
+    print("*****")
+    print(y_pred[150:155])
+    print("**********")
+
     # all featurea 
     x_test = songsWithAritsts.iloc[:,0:-1]
     y_test = songsWithAritsts.iloc[:,-1]

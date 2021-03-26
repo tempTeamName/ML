@@ -28,10 +28,21 @@ def clearTmpData():
     init()
 
 def testNew():
-    songsRegression = read_csv("./testing/spotify_testing.csv")
+    songsRegression = read_csv("./testing/spotify_testing.csv")[:49656]
     songsClassification = read_csv("./testing/spotify_testing_classification.csv")
 
-    # test the new dataset in regression
+    # print("songs regression")
+    # print(songsRegression.describe())
+    # print(songsRegression)
+
+    # print("songs classification")
+    # print(songsClassification.describe())
+
+     # test the new dataset in regression
+    # print("songs regression")
+    # print(songs.describe())
+    # print(songs)
+
     songs, songsWithAritsts = preForNew(songsRegression)
     songs.to_csv("./testing/dataSetCache/regression/songs.csv", index=False)
     songsWithAritsts.to_csv("./testing/dataSetCache/regression/songsWithAritsts.csv", index=False)
